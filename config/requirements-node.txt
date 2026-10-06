@@ -1,0 +1,7 @@
+ultralytics
+opencv-python
+gpiozero
+pySX127x
+spidev
+numpy
+pytest

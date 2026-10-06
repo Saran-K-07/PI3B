@@ -1,0 +1,2 @@
+# Copy to sms_recipients.yaml (git-ignored). One E.164 number per line, no quotes.
+# +91XXXXXXXXXX

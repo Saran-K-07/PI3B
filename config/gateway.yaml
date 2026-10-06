@@ -1,0 +1,10 @@
+# Pico gateway config (copy values into src/gateway/main.py CFG or gateway.ino)
+lora_freq: 433000000.0
+lora_sf: 9
+lora_bw: 125
+lora_power: 17
+dedupe_s: 60.0
+uart_id: 1
+uart_tx: 8
+uart_rx: 9
+uart_baud: 9600

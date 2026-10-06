@@ -1,0 +1,6 @@
+__pycache__/
+*.pyc
+.venv/
+config/sms_recipients.yaml
+evidence/
+*.jpg

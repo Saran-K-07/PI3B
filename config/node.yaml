@@ -1,0 +1,17 @@
+# Forest node config (flat key: value, no YAML lib needed)
+node_id: F01
+pir_pin: 17
+pir_warmup_s: 2.0
+vib_pin: 27
+sound_pin: 23
+sound_active_high: True
+cam_index: 0
+yolo_model: yolov8n.pt
+yolo_imgsz: 320
+yolo_conf: 0.5
+lora_freq: 433000000.0
+lora_sf: 9
+lora_bw: 125
+lora_power: 17
+cooldown_s: 5.0
+fusion_threshold: 0.6
