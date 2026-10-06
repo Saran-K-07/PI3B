@@ -13,6 +13,28 @@ from __future__ import annotations
 import os
 
 
+def _set_tx_power(lora, power: int) -> None:
+    """Set TX power across LoRaRF API variants.
+
+    1.4.0 renamed/reshaped the power call vs older docs; probe instead of
+    assuming. Raises RuntimeError listing available methods if none match.
+    """
+    if hasattr(lora, "setOutputPower"):
+        lora.setOutputPower(power)
+        return
+    if hasattr(lora, "setTxPower"):
+        try:
+            lora.setTxPower(power)
+        except TypeError:
+            lora.setTxPower(power, True)  # some variants take paBoost flag
+        return
+    if hasattr(lora, "setPower"):
+        lora.setPower(power)
+        return
+    avail = sorted(m for m in dir(lora) if "ower" in m or "Power" in m)
+    raise RuntimeError(f"no TX-power method on LoRaRF driver (power-ish: {avail})")
+
+
 class LoraTx:
     def __init__(self, frequency: float = 433e6, sf: int = 9, bw: int = 125,
                  power: int = 17, sync_word: int = 0x12,
@@ -48,7 +70,7 @@ class LoraTx:
             lora.setSpreadingFactor(self.sf)
             lora.setBandwidth(self.bw * 1000)  # kHz -> Hz
             lora.setSyncWord(self.sync_word)
-            lora.setOutputPower(self.power)
+            _set_tx_power(lora, self.power)
             self._backend = "LoRaRF"
             return lora
         except Exception as e:
