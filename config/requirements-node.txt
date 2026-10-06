@@ -2,8 +2,10 @@
 # Provided by APT on trixie — DO NOT pip install (wastes RAM, may break):
 #   python3-opencv (cv2 4.10), python3-numpy (2.2), python3-gpiozero, python3-pytest
 # Install: python3 -m pip install --no-cache-dir -r config/requirements-node.txt
+# NOTE: pySX127x is intentionally absent — it caps at Python <=3.11 and has
+# no installable version on trixie/Python 3.13. LoRaRF replaces it.
 ultralytics
-pySX127x
+LoRaRF
 spidev
 onnxruntime
 pyserial

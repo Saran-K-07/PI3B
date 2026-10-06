@@ -4,7 +4,9 @@ SPI0: NSS GPIO8, SCK GPIO11, MOSI GPIO10, MISO GPIO9,
       RST GPIO22, DIO0 GPIO24. 3.3V ONLY. Antenna required before TX.
 
 Mock mode (LORA_MOCK=1) records payloads in `sent` for tests.
-Real mode needs `pySX127x` (pip install pySX127x) + SPI enabled.
+Real mode uses `LoRaRF` (pip install LoRaRF) — pure-Python, works on
+Python 3.13/trixie. Legacy `pySX127x` is NOT used: it caps at
+Python <=3.11 and has no sdist, so pip cannot install it on this Pi.
 """
 from __future__ import annotations
 
@@ -26,21 +28,31 @@ class LoraTx:
         self.mock = os.getenv("LORA_MOCK", "0") == "1" if mock is None else mock
         self.sent: list[str] = []
         self._lora = None
+        self._backend = "mock" if self.mock else ""
         if not self.mock:
-            try:
-                from SX127x.LoRa import LoRa  # type: ignore
-                from SX127x.board_config import BOARD  # type: ignore
-                BOARD.setup()
-                self._lora = LoRa(verbose=False)
-                self._lora.set_mode(1)  # standby
-                self._lora.set_freq(frequency / 1e6)
-                self._lora.set_spreading_factor(sf)
-                self._lora.set_bw(bw)
-                self._lora.set_pa_config(pa_select=1, max_power=21,
-                                         output_power=power)
-                self._lora.set_sync_word(sync_word)
-            except Exception as e:
-                raise RuntimeError(f"LoRa HW init failed ({e})") from e
+            self._lora = self._init_lorarf()
+
+    def _init_lorarf(self):
+        try:
+            from LoRaRF import SX127x  # type: ignore
+        except Exception as e:
+            raise RuntimeError(
+                "LoRaRF not installed; run "
+                "'pip install --no-cache-dir LoRaRF' "
+                f"in ~/pi3b-venv ({e})"
+            ) from e
+        try:
+            lora = SX127x()
+            lora.begin()
+            lora.setFrequency(int(self.frequency))
+            lora.setSpreadingFactor(self.sf)
+            lora.setBandwidth(self.bw * 1000)  # kHz -> Hz
+            lora.setSyncWord(self.sync_word)
+            lora.setOutputPower(self.power)
+            self._backend = "LoRaRF"
+            return lora
+        except Exception as e:
+            raise RuntimeError(f"LoRa HW init failed ({e})") from e
 
     def send(self, payload: str) -> bool:
         if not isinstance(payload, str) or not payload:
@@ -52,13 +64,12 @@ class LoraTx:
             self.sent.append(payload)
             return True
         assert self._lora is not None
-        self._lora.write_payload(list(data))
-        self._lora.set_mode(3)  # TX
+        self._lora.send(data)
         return True
 
     def sleep(self) -> None:
         if self._lora is not None:
             try:
-                self._lora.set_mode(0)
+                self._lora.sleep()
             except Exception:
                 pass
