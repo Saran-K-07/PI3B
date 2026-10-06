@@ -1,7 +1,9 @@
+# PIP-ONLY requirements for the Pi 3B venv (created with --system-site-packages).
+# Provided by APT on trixie — DO NOT pip install (wastes RAM, may break):
+#   python3-opencv (cv2 4.10), python3-numpy (2.2), python3-gpiozero, python3-pytest
+# Install: python3 -m pip install --no-cache-dir -r config/requirements-node.txt
 ultralytics
-opencv-python
-gpiozero
 pySX127x
 spidev
-numpy
-pytest
+onnxruntime
+pyserial

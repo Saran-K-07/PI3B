@@ -1,6 +1,8 @@
-"""USB camera capture (8MP PC camera on /dev/video0).
+"""USB camera capture (USB2.0 PC CAM on /dev/video0, YUYV-only).
 
-Runs at 640x480 for YOLO speed even though the sensor is 8MP.
+Verified on Pi: index 0 = capture device (640x480 YUYV), index 1 = metadata
+sub-device (not a capture device). Forces V4L2 backend to silence GStreamer
+fallback warnings. Runs at 640x480 for YOLO (downscaled to 320 at inference).
 Mock mode (CAM_MOCK=1) returns a synthetic image so CI/PC works headless.
 """
 from __future__ import annotations
@@ -26,9 +28,14 @@ class Camera:
                 import cv2  # type: ignore
             except Exception as e:
                 raise RuntimeError(f"opencv required on Pi ({e})") from e
-            cap = cv2.VideoCapture(index)
-            cap.set(3, width)
-            cap.set(4, height)
+            cap = cv2.VideoCapture(index, cv2.CAP_V4L2)
+            try:
+                fourcc = cv2.VideoWriter_fourcc(*"YUYV")
+                cap.set(cv2.CAP_PROP_FOURCC, fourcc)
+            except Exception:
+                pass
+            cap.set(cv2.CAP_PROP_FRAME_WIDTH, width)
+            cap.set(cv2.CAP_PROP_FRAME_HEIGHT, height)
             if not cap.isOpened():
                 raise RuntimeError(f"cannot open camera {index}")
             self._cap = cap

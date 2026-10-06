@@ -1,4 +1,10 @@
 # Forest node config (flat key: value, no YAML lib needed)
+# Verified 2026-10-06 on trixie/aarch64: cam_index 0 = USB2.0 PC CAM 640x480 YUYV.
+# sound_active_high: True = DO HIGH on loud (most Adiy boards). Field finding:
+# SND read stuck HIGH in silence -> turn SND pot CCW until signal LED goes dark
+# in silence, then confirm one clap lights it; flip to False if yours is LOW-on-loud.
+# VIB SW-18010P is active-LOW (LOW = vibration); turn VIB pot to ~12 o'clock if
+# DO reads stuck LOW. PIR SE needs 5V + pin 11 (GPIO17) + H jumper + mid sensitivity.
 node_id: F01
 pir_pin: 17
 pir_warmup_s: 2.0
